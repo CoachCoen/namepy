@@ -1,0 +1,21 @@
+<html>
+    <head>
+        <script src="static/external/angular.js"></script>
+        <script src="static/external/moment.js"></script>
+    </head>
+    <body ng-app="HelloWorldApp" ng-controller="HelloWorldController">
+        <h1>namepy - Angular Hello World</h1>
+        <p>Welcome, today is [[ dateToday ]]</p>
+
+        <script>
+            angular.module('HelloWorldApp', [])
+				.config(function($interpolateProvider){
+    				$interpolateProvider.startSymbol('[[').endSymbol(']]');
+				})   
+                .controller('HelloWorldController', function($scope) {
+                    $scope.dateToday = moment().format('MMMM Do YYYY')
+                });
+        </script>
+
+    </body>
+</html>
