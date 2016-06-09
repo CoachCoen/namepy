@@ -2,19 +2,50 @@
     <head>
         <script src="static/external/angular.js"></script>
         <script src="static/external/moment.js"></script>
+        <script src="static/external/jquery.js"></script>
+        <script src="static/external/highcharts.src.js"></script>
     </head>
     <body ng-app="HelloWorldApp" ng-controller="HelloWorldController">
         <h1>namepy - Angular Hello World</h1>
         <p>Welcome, today is [[ dateToday ]]</p>
+		<div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
 
         <script>
             angular.module('HelloWorldApp', [])
-				.config(function($interpolateProvider){
-    				$interpolateProvider.startSymbol('[[').endSymbol(']]');
-				})   
+                .config(function($interpolateProvider){
+                    $interpolateProvider.startSymbol('[[').endSymbol(']]');
+                })   
                 .controller('HelloWorldController', function($scope) {
                     $scope.dateToday = moment().format('MMMM Do YYYY')
                 });
+
+			$(function () {
+			    $('#container').highcharts({
+			        chart: {
+			            type: 'column'
+			        },
+			        title: {
+		                text: 'Rabbit sightings'
+			        },
+			        xAxis: {
+			            categories: [
+			                'Spring',
+			                'Summer',
+			                'Autumn',
+			                'Winter'
+			            ],
+			        },
+			        series: [{
+			            name: '2015',
+			            data: [5, 7, 8, 3]
+			        }, {
+			            name: '2016',
+			            data: [6, 6, 10, 5]
+
+			        }]
+			    });
+			});
+
         </script>
 
     </body>
