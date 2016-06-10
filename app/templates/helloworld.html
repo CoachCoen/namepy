@@ -8,7 +8,7 @@
     <body ng-app="HelloWorldApp" ng-controller="HelloWorldController">
         <h1>namepy - Angular Hello World</h1>
         <p>Welcome, today is [[ dateToday ]]</p>
-		<div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+        <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
 
         <script>
             angular.module('HelloWorldApp', [])
@@ -19,32 +19,28 @@
                     $scope.dateToday = moment().format('MMMM Do YYYY')
                 });
 
-			$(function () {
-			    $('#container').highcharts({
-			        chart: {
-			            type: 'column'
-			        },
-			        title: {
-		                text: 'Rabbit sightings'
-			        },
-			        xAxis: {
-			            categories: [
-			                'Spring',
-			                'Summer',
-			                'Autumn',
-			                'Winter'
-			            ],
-			        },
-			        series: [{
-			            name: '2015',
-			            data: [5, 7, 8, 3]
-			        }, {
-			            name: '2016',
-			            data: [6, 6, 10, 5]
-
-			        }]
-			    });
-			});
+            $(function () {
+                $('#container').highcharts({
+                    chart: {
+                        type: 'column'
+                    },
+                    title: {
+                        text: 'Name frequencies'
+                    },
+                    series: [
+                    	{% for name in names %}
+		                    {
+		                        name: '{{ name.name }}',
+		                        data: [
+		                        	{% for frequency in name.frequencies %}
+		                        		{{ frequency.boys_count }},
+		                        	{% endfor %}
+		                        ]
+		                    },
+		                {% endfor %}
+                    ]
+                });
+            });
 
         </script>
 
