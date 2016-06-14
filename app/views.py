@@ -1,6 +1,6 @@
 from flask import render_template
 from app import app
-from models import Name
+from app.models import Name
 
 @app.route("/")
 def hello():
