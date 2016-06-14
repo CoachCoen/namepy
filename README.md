@@ -3,7 +3,6 @@ A personal project, using Python, Flask, Angular, Highcharts and more, playing w
 
 For more information see http://coendegroot.com/category/namepy/
 
-Step 4 - Adding PostgreSQL to the project
-Using Flask-SQLAlchemy and SQLAlchemy so Flask can access PostgreSQL
+Step 6 - Importing the data
 
-Highcharts, Flask and Angular were added in the previous steps
+Now that the technical infrastructure has been set up (see previous steps) we need to grab some data to work with
