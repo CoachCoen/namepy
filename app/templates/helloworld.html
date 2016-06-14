@@ -15,32 +15,37 @@
                 .config(function($interpolateProvider){
                     $interpolateProvider.startSymbol('[[').endSymbol(']]');
                 })   
-                .controller('HelloWorldController', function($scope) {
-                    $scope.dateToday = moment().format('MMMM Do YYYY')
-                });
+                .controller('HelloWorldController', function($scope, $http) {
+                    $scope.dateToday = moment().format('MMMM Do YYYY');
 
-            $(function () {
-                $('#container').highcharts({
-                    chart: {
-                        type: 'column'
-                    },
-                    title: {
-                        text: 'Name frequencies'
-                    },
-                    series: [
-                    	{% for name in names %}
-		                    {
-		                        name: '{{ name.name }}',
-		                        data: [
-		                        	{% for frequency in name.frequencies %}
-		                        		{{ frequency.boys_count }},
-		                        	{% endfor %}
-		                        ]
+                    $scope.showChart = function(response_data) {
+
+                    	chart_data = []
+                    	angular.forEach(response_data.objects, function(name_object, key) {
+
+                    		boys_count = []
+                    		angular.forEach(name_object.frequencies, function(frequency, key) {
+                    			boys_count.push(frequency.boys_count);
+                    		});
+                    		chart_data.push({ name: name_object.name, data: boys_count });
+                    	});
+
+		                $('#container').highcharts({
+		                    chart: {
+		                        type: 'column'
 		                    },
-		                {% endfor %}
-                    ]
+		                    title: {
+		                        text: 'Name frequencies'
+		                    },
+		                    series: chart_data
+		                });
+                    };
+
+                    $http.get('api/name')
+                    	.then(function(response) {
+                    		$scope.showChart(response.data);
+                    	});
                 });
-            });
 
         </script>
 
