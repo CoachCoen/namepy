@@ -23,10 +23,10 @@ def read_frequencies_from_file(filename, frequencies):
                 print
                 continue
 
-            if not frequencies.has_key(name):
+            if name not in frequencies:
                 frequencies[name] = {}
 
-            if not frequencies[name].has_key(year):
+            if year not in frequencies[name]:
                 frequencies[name][year] = {'F': 0, 'M': 0}
 
             frequencies[name][year][sex] = count
