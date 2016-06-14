@@ -1,23 +1,10 @@
 # Runs both locally (using python index.py) and on WebFaction
 
+# On WebFaction, must be run after activating the virtualenv
+
 import random
-import sys
-import os
 
-from flask_sqlalchemy import SQLAlchemy
-
-CURRENT_FILE = os.path.abspath(__file__)
-CURRENT_DIR = os.path.dirname(CURRENT_FILE)
-PROJECT_DIR = os.path.dirname(CURRENT_DIR)
-
-# For WebFaction, should be ignored locally
-sys.path.append(PROJECT_DIR + '/virtualenv/lib/python3.5/site-packages/')
-sys.path.append(PROJECT_DIR + '/src/')
-sys.path.append(PROJECT_DIR + '/src/app/')
-
-from app import app
-
-db = SQLAlchemy(app)
+from app import db
 
 from app.models import Name, NameFrequency
 
