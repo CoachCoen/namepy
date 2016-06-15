@@ -10,96 +10,59 @@ from app import db
 
 from app.models import Name, NameFrequency
 
-def read_frequencies_from_file(filename, frequencies):
+def read_frequencies_from_file(filename, names):
+    print(filename)
     year = int(filename[3:7])
+
+    year_frequencies = {}
+    for name in names:
+        year_frequencies[name] = {'F': 0, 'M': 0}
 
     with open('raw_data/%s' % filename) as file:
         for line in file.readlines():
             try:
-                name, sex, count = line.split(",")
+                name_text, sex, count = line.split(",")
             except:
                 print("Couldn't parse line")
                 print(line)
                 print
                 continue
 
-            if name not in frequencies:
-                frequencies[name] = {}
+            if name_text not in names:
+                name = Name(name=name_text)
+                db.session.add(name)
+                db.session.commit()
+                names[name_text] = name.id
+                year_frequencies[name_text] = {'F': 0, 'M': 0}
 
-            if year not in frequencies[name]:
-                frequencies[name][year] = {'F': 0, 'M': 0}
+            year_frequencies[name_text][sex] = int(count)
 
-            frequencies[name][year][sex] = count
-
-def dummy():
-
-    name = Name.query.filter_by(name=name_text).first()
-
-    if not name:
-        name = Name(name=name_text)
-        db.session.add(name)
-        frequency = None
-    else:
-        frequency = NameFrequency.query.filter_by(name=name, year=year).first()
-
-    if not frequency:
-        frequency = NameFrequency(name=name, year=year)
-        db.session.add(frequency)
-
-    if sex == "F":
-        frequency.boys_count = count
-    elif sex == "M":
-        frequency.girls_count = count
-    else:
-        print("Incorrect sex")
-        print(line)
-        print
-        # continue
-
-    db.session.commit()
-
-def write_frequencies_to_database(frequencies):
-    print("Writing frequencies to database")
-    for name_text in frequencies.keys():
-        name = Name(name=name_text)
-        db.session.add(name)
-
-        for year in frequencies[name_text].keys():
-            frequency = NameFrequency(name=name, year=year, 
-                            girls_count=frequencies[name_text][year]["F"],
-                            boys_count=frequencies[name_text][year]["M"])
-            db.session.add(frequency)
-    db.session.commit()
+        for name, name_frequency in year_frequencies.iteritems():
+            if name_frequency['F'] + name_frequency['M']:
+                name_id = names[name]
+                frequency_record = NameFrequency(name_id=name_id,
+                    year=year,
+                    boys_count=name_frequency['M'],
+                    girls_count=name_frequency['F'])
+                db.session.add(frequency_record)
+                db.session.commit()
 
 def read_name_frequencies():
+    db.create_all()
+
     # Start with an empty list
+    print("Deleting any previous data")
     db.session.query(NameFrequency).delete()
     db.session.query(Name).delete()
     db.session.commit()
+    print("Done")
 
-    # To speed things up we'll read all names and frequencies in memory first
-    result = {}
+    names = {}
 
     # Get file list
-    print("Reading frequencies from files")
     for filename in listdir('raw_data'):
         if filename[:3] == 'yob':
-            read_frequencies_from_file(filename, result)
-
-    write_frequencies_to_database(result)
-
-def create_test_data():
-
-    for name in ('Fred', 'Sue'):
-        new_name = Name(name=name)
-        db.session.add(new_name)
-        for year in range(1990, 1996):
-            new_frequency = NameFrequency(
-                name=new_name,
-                year=year,
-                boys_count=random.randint(50, 100),
-                girls_count=random.randint(50, 100))
-    db.session.commit()
+            read_frequencies_from_file(filename, names)
 
 if __name__ == '__main__':
     read_name_frequencies()
