@@ -35,7 +35,7 @@ class PointsTable():
                 letters = table_cell.text.upper()
                 letters = letters.replace('BLANK', '').replace(' ', '')
                 for letter in letters:
-                    if letter in string.uppercase:
+                    if letter in string.ascii_uppercase:
                         result[letter] = row_value
         self.points = result
 
