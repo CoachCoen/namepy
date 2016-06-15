@@ -1,7 +1,7 @@
 import string
 
 import requests
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 
 from app import db
 
