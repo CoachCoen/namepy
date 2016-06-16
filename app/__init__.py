@@ -10,3 +10,4 @@ from app import views, models
 
 manager = flask_restless.APIManager(app, flask_sqlalchemy_db=db)
 manager.create_api(models.Name, methods=['GET'])
+manager.create_api(models.Set, methods=['GET'], results_per_page=0)

@@ -3,6 +3,6 @@ A personal project, using Python, Flask, Angular, Highcharts and more, playing w
 
 For more information see http://coendegroot.com/category/namepy/
 
-Step 6 - Importing the data
+Step 7 - Bringing it all together
 
-Now that the technical infrastructure has been set up (see previous steps) we need to grab some data to work with
+With the infra structure and the data set up we can bring it all together and create a functional (if not yet pretty) web page

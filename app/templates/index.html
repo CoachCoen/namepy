@@ -1,0 +1,216 @@
+<html>
+    <head>
+        <script src="static/external/angular.js"></script>
+        <script src="static/external/jquery.js"></script>
+        <script src="static/external/highcharts.src.js"></script>
+    </head>
+
+    <body ng-app="NamePyApp" ng-controller="NamePyController">
+        <h1>namepy - Angular, Python/Flask, PostgreSQL, Highcharts demo project</h1>
+
+        <p>Your name <input type="text" ng-model="visitor_name" ng-model-options="{debounce: {'default':1000, 'blur':0}}"></input></p>
+
+        <div id="scores_container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+        <div id="babynames_container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+        <script>
+            angular.module('NamePyApp', [])
+                .controller('NamePyController', function($scope, $http) {
+                    $scope.sets = null;
+                    $scope.visitor_name = "";
+
+                    $scope.sort_on_element = function(to_sort, index) {
+                		to_sort.sort(function (a,b) {
+							if(a[index] < b[index]) {
+						    	return 1;
+						    } else if (a[index] > b[index]) {
+						      	return -1;
+						    }
+						    return 0;
+						 });
+                    }
+
+                    $scope.calculateLetterScores = function() {
+                    	var result = [];
+                    	var name = $scope.visitor_name.toUpperCase();
+                    	angular.forEach($scope.sets, function(set, index) {
+                    		var total = 0;
+                    		var error = false;
+                    		angular.forEach(name.split(''), function(character, index2) {
+                    			if (character in set.scores) {
+                    				total += set.scores[character];
+                    			} else {
+                    				error = true;
+                    			}
+                    		});
+
+                    		if (error == false) {
+                    			result.push([set.name, total]);
+                    		}
+
+                    		$scope.sort_on_element(result, 1);
+
+                    		$scope.scores = result;
+                    	});
+                    };
+
+                    $scope.showLetterScores = function () {
+					    $('#scores_container').highcharts({
+					        chart: {
+					            type: 'column'
+					        },
+					        title: {
+					            text: 'Scrabble (tm) scores for "' + $scope.visitor_name + '"'
+					        },
+					        xAxis: {
+					            type: 'category',
+					            labels: {
+					                rotation: -45,
+					                style: {
+					                    fontSize: '13px',
+					                    fontFamily: 'Verdana, sans-serif'
+					                }
+					            }
+					        },
+					        yAxis: {
+					            min: 0,
+					            title: {
+					                text: 'Total score'
+					            }
+					        },
+					        legend: {
+					            enabled: false
+					        },
+					        series: [{
+					            data: $scope.scores,
+					        }]
+					    });
+
+                    };
+
+                    $scope.show_name_distribution = function(response) {
+                		if (response.data.num_results == 1) {
+
+            				var boy_frequency = [];
+            				var girl_frequency = [];
+            				var boys_found = false;
+            				var girls_found = false;
+
+            				angular.forEach(response.data.objects[0].frequencies, 
+            					function(frequency) {
+            						boy_frequency.push([
+            							Date.UTC(frequency.year, 1, 1), 
+            							frequency.boys_count]);
+
+            						girl_frequency.push([ 
+            							Date.UTC(frequency.year, 1, 1), 
+            							frequency.girls_count]);
+
+            						if (frequency.boys_count) boys_found = true;
+            						if (frequency.girls_count) girls_found = true;
+            					});
+
+        					$scope.sort_on_element(boy_frequency, 0);
+        					$scope.sort_on_element(girl_frequency, 0);
+
+        					var series = [];
+        					if (boys_found) {
+        						series.push(							        	{ name: "Boys' names", data: boy_frequency } );
+        					}
+
+        					if (girls_found) {
+        						series.push(
+						        	{ name: "Girls' names", data: girl_frequency } );
+        					}
+
+	                		$('#babynames_container').show();
+
+						    $('#babynames_container').highcharts({
+						        chart: {
+						            type: 'spline'
+						        },
+						        title: {
+						            text: 'US Baby name frequencies for ' + $scope.visitor_name
+						        },
+						        xAxis: {
+						            type: 'datetime',
+						            dateTimeLabelFormats: {
+						                year: '%Y'
+						            },
+						            title: {
+						                text: 'Year'
+						            }
+						        },
+						        yAxis: {
+						            min: 0
+						        },
+						        tooltip: {
+						            headerFormat: '<b>{series.name}</b><br>',
+						            pointFormat: '{point.x:%Y}: {point.y}'
+						        },
+
+						        plotOptions: {
+						            spline: {
+						                marker: {
+						                    enabled: true
+						                }
+						            }
+						        },
+
+						        series: series
+						    });
+	                	} else {
+			                $('#babynames_container').hide();
+			            }
+                    }
+
+                    $scope.request_name_distribution = function() {
+                    	var filters = [{ name: 'name', 
+                    		op: 'ilike', 
+                    		val: $scope.visitor_name}];
+
+                		$http({
+                			method: 'GET',
+                			url: 'api/name',
+                			params: {"q": JSON.stringify({"filters": filters})}
+                    		})
+                			.then(
+                				$scope.show_name_distribution,  
+                				function(response) {            
+			                		$('#babynames_container').hide();
+                				}
+                			);
+                    }
+
+                    $http.get('api/set')
+                    	.then(function(response) {
+                    		// Simplify the scores, for easy access
+                    		$scope.sets = [];
+                    		angular.forEach(response.data.objects, function(set, index) {
+                    			scores = {};
+                    			angular.forEach(set.scores, function(score, index) {
+                    				scores[score.letter] = score.score;
+                    			});
+                    			$scope.sets.push({ name: set.name, scores: scores});
+                    		});
+                    	});
+
+                    $scope.$watch('visitor_name', function() {
+                    	if ($scope.visitor_name) {
+							$scope.request_name_distribution();
+                    		$('#scores_container').show();
+	                		$scope.calculateLetterScores();
+	                		$scope.showLetterScores();
+                    	} else {
+                    		$('#scores_container').hide();
+	                		$('#babynames_container').hide();
+                    	}
+
+                    })
+                });
+
+        </script>
+
+    </body>
+</html>
